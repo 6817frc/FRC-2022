@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
  * arcade steering.
  */
 public class Robot extends TimedRobot {
-  private final PWMSparkMax leftFront = new PWMSparkMax(0);
+  private final PWMSparkMax leftFront = new PWMSparkMax(0); //variable for front left motor
   private final PWMSparkMax leftBack = new PWMSparkMax (1);
   private final PWMSparkMax rightFront = new PWMSparkMax(2);
   private final PWMSparkMax rightBack = new PWMSparkMax (3);
