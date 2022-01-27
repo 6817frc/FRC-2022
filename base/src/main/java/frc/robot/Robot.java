@@ -23,7 +23,7 @@ public class Robot extends TimedRobot {
   private final MotorControllerGroup leftGroup = new MotorControllerGroup(leftFront, leftBack);
   private final MotorControllerGroup rightGroup = new MotorControllerGroup(rightFront, rightBack);
   private final DifferentialDrive robotDrive = new DifferentialDrive (leftGroup, rightGroup);
-  private final Joystick m_stick = new Joystick(0);
+  private final Joystick stick = new Joystick(0);
 
   @Override
   public void robotInit() {
@@ -39,6 +39,6 @@ public class Robot extends TimedRobot {
     // Drive with arcade drive.
     // That means that the Y axis drives forward
     // and backward, and the X turns left and right.
-    robotDrive.arcadeDrive(-m_stick.getY(), m_stick.getX());
+    robotDrive.arcadeDrive(-stick.getY(), stick.getX());
   }
 }
