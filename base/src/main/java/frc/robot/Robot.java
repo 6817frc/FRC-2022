@@ -16,10 +16,15 @@ import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
  * arcade steering.
  */
 public class Robot extends TimedRobot {
+  float speedIncrement;
+  float shotSpeed;
+  private final float SHOOTER_FINETUNE = 0.01;
+  private final float SHOOTER_COURSETUNE = 0.05;
   private final PWMSparkMax leftFront = new PWMSparkMax(0); //variable for front left motor
   private final PWMSparkMax leftBack = new PWMSparkMax (1);
   private final PWMSparkMax rightFront = new PWMSparkMax(2);
   private final PWMSparkMax rightBack = new PWMSparkMax (3);
+  private final PWMSparkMax shooter = new PWMSparkMax (4);
   private final MotorControllerGroup leftGroup = new MotorControllerGroup(leftFront, leftBack);
   private final MotorControllerGroup rightGroup = new MotorControllerGroup(rightFront, rightBack);
   private final DifferentialDrive robotDrive = new DifferentialDrive (leftGroup, rightGroup);
@@ -39,6 +44,18 @@ public class Robot extends TimedRobot {
     // Drive with arcade drive.
     // That means that the Y axis drives forward
     // and backward, and the X turns left and right.
+	  
     robotDrive.arcadeDrive(-m_stick.getY(), m_stick.getX());
+    if (m_stick.getButton(3)) {
+    	speedIncrement= (speedIncrement==SHOOTER_COURSETUNE)?SHOOTER_FINETUNE:SHOOTER_COURSETUNE;
+    }
+    if (m_stick.getButton(1)) {
+    	shotSpeed += speedIncrement;
+    	 shooter.setOutput(shotSpeed);
+    }
+    if (m_stick.getButton(2)) {
+    	shotSpeed -= speedIncrement;
+   	    shooter.setOutput(shotSpeed);
+    }
   }
-}
+  }
