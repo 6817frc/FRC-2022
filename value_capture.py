@@ -24,9 +24,9 @@ while True:
 	b_mean = np.mean(b)
 	g_mean = np.mean(g)
 	r_mean = np.mean(r)
-    cv2.waitKey(1)
+cv2.waitKey(1)
 	# displaying the most prominent color
-	if b_mean > g_mean and b_mean > r_mean:
+if b_mean > g_mean and b_mean > r_mean:
 		print("Blue")
 #     if (g_mean > r_mean and g_mean > b_mean):
 # 		print("Green")
