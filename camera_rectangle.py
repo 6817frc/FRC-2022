@@ -1,11 +1,11 @@
 import cv2
 import numpy as np
-import requests 
+import requests
 
 width = 3
 height = 5
 #cap = cv2.VideoCapture(0)
-url = r'http://roborio-6817-frc.local:1181/?action=stream'
+url = r'http://roborio-6817-frc.local:1181/stream.mjpg'
 while True:
     
     resp = requests.get(url, stream=True).raw
@@ -44,5 +44,5 @@ while True:
     if cv2.waitKey(1) == 27: #if exit, break loop
         break
 
-cap.release()
+
 cv2.destroyAllWindows()
