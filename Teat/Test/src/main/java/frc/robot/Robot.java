@@ -11,6 +11,9 @@ import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
+import edu.wpi.first.wpilibj.XboxController;
+import java.rmi.Remote;
+
 import edu.wpi.first.cameraserver.CameraServer;
 
 /**
@@ -34,6 +37,7 @@ public class Robot extends TimedRobot {
   private final MotorControllerGroup rightGroup = new MotorControllerGroup(rightFront, rightBack);
   private final DifferentialDrive robotDrive = new DifferentialDrive (leftGroup, rightGroup);
   private final Joystick m_stick = new Joystick(0);
+  private final XboxController logiController = new XboxController(1); // 1 is the USB Port to be used as indicated on the Driver Station
 
   @Override
   public void robotInit() {
@@ -79,6 +83,8 @@ public class Robot extends TimedRobot {
     }
       shooter.set(m_stick.getRawButton(1)?shotSpeed:MOTOR_OFF);
       intake.set(m_stick.getRawButton(12)?shotSpeed:MOTOR_OFF);
+      shooter.set(logiController.getRawButton(6)?.5:MOTOR_OFF);
+      intake.set(logiController.getRawButton(5)?.5:MOTOR_OFF);
     SmartDashboard.putNumber("DB/Slider 0", shotSpeed);
   }
   //function back up
@@ -98,13 +104,35 @@ public class Robot extends TimedRobot {
     while (x!=0) {
       robotDrive.arcadeDrive(0, TURNSPEED*direction);
     }
-    
+    double CamTo = ((y+100)/200)//change this code later for arc of ball and how that relates to 
     shooter.set(CamTo);
     intake.set(.5);
   }  
   //function Shoot (high) w/o camera
+  public void HighShot(int x,int y,double power) {
+    int direction=(x>0)?1:-1;
+    // change x=0 to range
+    while (x!=0) {
+      robotDrive.arcadeDrive(0, TURNSPEED*direction);
+    }
+    shooter.set(power);
+    intake.set(.5);
+  }  
   //function shoot (low)
+  public void LowShot(int x,int y,double power) {
+    int direction=(x>0)?1:-1;
+    // change x=0 to range
+    while (x!=0) {
+      robotDrive.arcadeDrive(0, TURNSPEED*direction);
+    }
+    shooter.set(power);
+    intake.set(.5);
+  }  
   //function pickup ball/intake
+  public void SuckySuckSuck(double speed,double duration) {
+    intake.set(speed);
+    //while duration
+  }
 
 
 }
