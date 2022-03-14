@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 import edu.wpi.first.wpilibj.XboxController;
-import java.rmi.Remote;
 
 import edu.wpi.first.cameraserver.CameraServer;
 
@@ -104,7 +103,7 @@ public class Robot extends TimedRobot {
     while (x!=0) {
       robotDrive.arcadeDrive(0, TURNSPEED*direction);
     }
-    double CamTo = ((y+100)/200)//change this code later for arc of ball and how that relates to 
+    double CamTo = ((y+100)/200);//change this code later for arc of ball and how that relates to 
     shooter.set(CamTo);
     intake.set(.5);
   }  
