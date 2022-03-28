@@ -5,7 +5,6 @@
 package frc.robot;
 
 import java.lang.Math;
-
 import edu.wpi.first.wpilibj.IterativeRobotBase;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.MotorSafety;
@@ -27,10 +26,12 @@ import edu.wpi.first.cameraserver.CameraServer;//will be deleted
  * arcade steering.
  */
 public class Robot extends TimedRobot {
+  Timer timer= new Timer();
   float speedIncrement;
   float shotSpeed;
   private final int MOTOR_OFF=0;
-  Timer timer= new Timer();
+  private final int camWidth=640;
+  private final int camHeight=480;
   private final double TURNSPEED= 0.15;
   private final int PIXEL_OFFSET= 3;
   private final float SHOOTER_FINETUNE = (float) 0.01;
@@ -61,7 +62,7 @@ public class Robot extends TimedRobot {
     CameraServer.startAutomaticCapture();
     robotDrive.setSafetyEnabled(true);
     shooter.setInverted(true);
-    String[] list={"low goal", "high goal", "back up", "It's complicated"};
+    String[] list={"low goal", "high goal", "back up", "It's complicated", "It's complicated (no Cam)"};
     SmartDashboard.putStringArray("Auto List", list);
     
   }
@@ -121,7 +122,10 @@ public class Robot extends TimedRobot {
         this.robotDrive.arcadeDrive(-0.6, 0);
       }
         break;
+
+
       case "It's complicated":
+      Double turnDone= 15.0;
       if(timer.get()<=3&& timer.get()>0){
         this.robotDrive.arcadeDrive(0.6, 0);
         intake.set(0.5);
@@ -129,18 +133,58 @@ public class Robot extends TimedRobot {
       if(timer.get()<=3.75&& timer.get()>3.25){
         intake.set(-0.5);
       }
-      if(timer.get()<=3.75&& timer.get()>3.25){
-        intake.set(-0.5);
-      }
-      if(timer.get()>4){
+      if(timer.get()<=4&& timer.get()>3.75){
         intake.stopMotor();
-        int center = (int) Math.abs(SmartDashboard.getNumber("x", 1000000000));
+      }
+      if(timer.get()<=turnDone&& timer.get()>4){
+        intake.stopMotor();
+        int center = (int) Math.abs(camWidth-SmartDashboard.getNumber("x", 1000000));
         while (center>=PIXEL_OFFSET) {
           robotDrive.arcadeDrive(0, TURNSPEED);
         }
-        
+        if(center<=PIXEL_OFFSET) {
+          turnDone = timer.get();
+        }
+      }
+      if(timer.get()>turnDone){
+        int vertical = (int) Math.abs(camHeight-SmartDashboard.getNumber("y", 1000000));
+        while (PIXEL_OFFSET>vertical){
+          robotDrive.arcadeDrive(0.6, 0);
+        }
+        shooter.set(1);
+        intake.set(0.5);
+      }
+      break;
+
+
+
+      case "It's complicated (no Cam)":
+      if(timer.get()<=3&& timer.get()>0){
+        this.robotDrive.arcadeDrive(0.6, 0);
+        intake.set(0.5);
+      }
+      if(timer.get()<=3.75&& timer.get()>3.25){
+        intake.set(-0.5);
+      }
+      if(timer.get()<=4&& timer.get()>3.75){
+        intake.stopMotor();
+      }
+      if(timer.get()<=5&& timer.get()>4){
+        intake.stopMotor();
+        robotDrive.arcadeDrive(0, TURNSPEED);
       }
 
+      if(timer.get()<=6&& timer.get()>5){
+        robotDrive.arcadeDrive(0.6, 0);
+      }
+      if(timer.get()<=7&& timer.get()>6){
+        shooter.set(1);
+        robotDrive.arcadeDrive(0, 0);
+      }
+      if(timer.get()<=14&& timer.get()>7){
+        shooter.set(1);
+        intake.set(1);
+      }
       break;
 
     }
@@ -192,7 +236,7 @@ public class Robot extends TimedRobot {
     }
     robotDrive.arcadeDrive(0, 0);
   }
-
+  //function back up w/ Cam
   public void backupCam(double speed,double y,int goalY) {
     robotDrive.arcadeDrive(speed, 0);
     while (goalY>y);
