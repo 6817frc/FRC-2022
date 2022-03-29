@@ -1,7 +1,15 @@
+from msilib.schema import tables
 from tkinter import Frame
 import cv2
 import numpy as np
 import requests
+from networktables import NetworkTables
+
+
+NetworkTables.initialize(server='10.68.17.2')
+
+#NetworkTables.startTeam(6817)
+
 
 width = 3
 height = 5
@@ -47,6 +55,7 @@ while True:
         red_area = max(contours, key=cv2.contourArea)
         x, y, w, h = cv2.boundingRect(red_area)
         cv2.rectangle(frame,(x, y),(x+w, y+h),(0, 0, 255), 2)
+
 
 
     cv2.imshow('frame', frame)
