@@ -5,7 +5,6 @@
 package frc.robot;
 
 import java.lang.Math;
-
 import edu.wpi.first.wpilibj.IterativeRobotBase;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.MotorSafety;
@@ -20,17 +19,19 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.cameraserver.CameraServer;//will be deleted
+
 
 /**
  * This is a demo program showing the use of the DifferentialDrive class. Runs the motors with
  * arcade steering.
  */
 public class Robot extends TimedRobot {
+  Timer timer= new Timer();
   float speedIncrement;
   float shotSpeed;
   private final int MOTOR_OFF=0;
-  Timer timer= new Timer();
+  private final int camWidth=640;
+  private final int camHeight=480;
   private final double TURNSPEED= 0.15;
   private final int PIXEL_OFFSET= 3;
   private final float SHOOTER_FINETUNE = (float) 0.01;
@@ -48,7 +49,7 @@ public class Robot extends TimedRobot {
   private final Joystick m_stick = new Joystick(0);
   private final XboxController logiController = new XboxController(1); // 1 is the USB Port to be used as indicated on the Driver Station
   private NetworkTable datatable;
-  String autoName;
+  String autoName="low goal";
   @Override
   public void robotInit() {
     // We need to invert one side of the drivetrain so that positive voltages
@@ -58,10 +59,9 @@ public class Robot extends TimedRobot {
     datatable = inst.getTable("datatable");
     rightBack.setInverted(true);
     rightFront.setInverted(true);
-    CameraServer.startAutomaticCapture();
     robotDrive.setSafetyEnabled(true);
     shooter.setInverted(true);
-    String[] list={"low goal", "high goal", "back up", "It's complicated"};
+    String[] list={"low goal", "high goal", "back up", "It's complicated", "It's complicated (no Cam)"};
     SmartDashboard.putStringArray("Auto List", list);
     
   }
@@ -81,34 +81,36 @@ public class Robot extends TimedRobot {
 
   //int goalY=0;  
   //backupCam((double) 0.5,datatable.getEntry("vision_Y").getValue().getDouble(),goalY);
-  autoName = SmartDashboard.getString("Auto Selector", "back up");
-
+  this.autoName = SmartDashboard.getString("Auto Selector", "low goal");
+  System.out.println(autoName);
   }
+
   @Override
   public void autonomousPeriodic(){
-    switch(autoName){
+    switch(this.autoName){
+      default:
       case "low goal":
-      if(timer.get()<=5){
-        shooter.set(.5);
-        //MotorSafety.checkMotors();
-      }
-      if(timer.get()<=5 && timer.get()>3){
-       shooting.set(.5);
-      }
-      else if(timer.get()<=7&& timer.get()>6){
-        intake.stopMotor();
-        shooter.stopMotor();
-        this.robotDrive.arcadeDrive(-0.6, 0);
-      }
-        break;
+        if(timer.get()<=3){
+          shooter.set(.5);
+         }
+         if(timer.get()<=5 && timer.get()>3){
+          shooting.set(.5);
+         }
+         else if(timer.get()<=7&& timer.get()>6){
+          intake.stopMotor();
+          shooter.stopMotor();
+          this.robotDrive.arcadeDrive(-0.6, 0);
+         }
+       break;
       case "high goal":
       if(timer.get()<=2){
-        shooter.set(1);
+        shooter.set(0.7);
         this.robotDrive.arcadeDrive(-0.6, 0);
         //MotorSafety.checkMotors();
       }
       if(timer.get()<=4 && timer.get()>2){
-       shooting.set(1);
+       shooter.set(0.7);
+       intake.set(1);
       }
       else if(timer.get()<=7&& timer.get()>6){
         intake.stopMotor();
@@ -121,7 +123,10 @@ public class Robot extends TimedRobot {
         this.robotDrive.arcadeDrive(-0.6, 0);
       }
         break;
+
+
       case "It's complicated":
+      Double turnDone= 15.0;
       if(timer.get()<=3&& timer.get()>0){
         this.robotDrive.arcadeDrive(0.6, 0);
         intake.set(0.5);
@@ -129,20 +134,60 @@ public class Robot extends TimedRobot {
       if(timer.get()<=3.75&& timer.get()>3.25){
         intake.set(-0.5);
       }
-      if(timer.get()<=3.75&& timer.get()>3.25){
-        intake.set(-0.5);
-      }
-      if(timer.get()>4){
+      if(timer.get()<=4&& timer.get()>3.75){
         intake.stopMotor();
-        int center = (int) Math.abs(SmartDashboard.getNumber("x", 1000000000));
+      }
+      if(timer.get()<=turnDone&& timer.get()>4){
+        intake.stopMotor();
+        int center = (int) Math.abs(camWidth-SmartDashboard.getNumber("DB/Slider 0", 1000000));
         while (center>=PIXEL_OFFSET) {
           robotDrive.arcadeDrive(0, TURNSPEED);
         }
-        
+        if(center<=PIXEL_OFFSET) {
+          turnDone = timer.get();
+        }
       }
-
+      if(timer.get()>turnDone){
+        int vertical = (int) Math.abs(camHeight-SmartDashboard.getNumber("DB/Slider 1", 1000000));
+        while (PIXEL_OFFSET>vertical){
+          robotDrive.arcadeDrive(0.6, 0);
+        }
+        shooter.set(1);
+        intake.set(0.5);
+      }
       break;
 
+
+
+      case "It's complicated (no Cam)":
+      if(timer.get()<=3&& timer.get()>0){
+        this.robotDrive.arcadeDrive(0.6, 0);
+        intake.set(0.5);
+      }
+      if(timer.get()<=3.75&& timer.get()>3.25){
+        intake.set(-0.5);
+      }
+      if(timer.get()<=4&& timer.get()>3.75){
+        intake.stopMotor();
+      }
+      if(timer.get()<=5&& timer.get()>4){
+        intake.stopMotor();
+        robotDrive.arcadeDrive(0, TURNSPEED);
+      }
+
+      if(timer.get()<=6&& timer.get()>5){
+        robotDrive.arcadeDrive(0.6, 0);
+      }
+      if(timer.get()<=7&& timer.get()>6){
+        shooter.set(1);
+        robotDrive.arcadeDrive(0, 0);
+      }
+      if(timer.get()<=14&& timer.get()>7){
+        shooter.set(1);
+        intake.set(1);
+      }
+      break;
+      
     }
     //this.backup(.1,2000);
     
@@ -152,13 +197,37 @@ public class Robot extends TimedRobot {
   }
 
   @Override
+  public void teleopInit () {
+    shotSpeed= (float) 0.8;
+  }
+
+  @Override
   public void teleopPeriodic() {
     // Drive with arcade drive.
     // That means that the Y axis drives forward
     // and backward, and the X turns left and right.
 	  
-    robotDrive.arcadeDrive(-m_stick.getY(),m_stick.getZ());
-    if (m_stick.getRawButtonPressed(2)) {
+    robotDrive.arcadeDrive((-logiController.getRawAxis(5)),(logiController.getRawAxis(4)/1.5));
+
+    intake.set((logiController.getRawButton(5)?.5:(-logiController.getRawAxis(6))));
+
+    /*if(logiController.getAButton() || logiController.getBButton()){
+      double speed = CamYToSpeed(logiController.getBButton());
+      shooter.set(speed);
+    }
+    else{
+      shooter.set((logiController.getRawButton(6)?.5:(-logiController.getRawAxis(5))));
+    }
+    */
+    SmartDashboard.putNumber("DB/Slider 2", shotSpeed);
+    if (logiController.getBButtonPressed()) {
+    	shotSpeed += 0.05;
+    }
+    if (logiController.getAButtonPressed()) {
+    	shotSpeed -= 0.05;
+    }
+    shooter.set(logiController.getXButton()?shotSpeed:(logiController.getRawButton(6)?.5:0.0));
+    /*if (m_stick.getRawButtonPressed(2)) {
     	speedIncrement= (speedIncrement==SHOOTER_COURSETUNE)?SHOOTER_FINETUNE:SHOOTER_COURSETUNE;
     }
     if (m_stick.getRawButtonPressed(4)) {
@@ -166,74 +235,25 @@ public class Robot extends TimedRobot {
     }
     if (m_stick.getRawButtonPressed(3)) {
     	shotSpeed -= speedIncrement;
-    }
+    } 
+    */
       //shooter.set(m_stick.getRawButton(1)?shotSpeed:MOTOR_OFF);
       //intake.set(m_stick.getRawButton(12)?shotSpeed:MOTOR_OFF);
-      shooter.set((logiController.getRawButton(6)?.5:(-logiController.getRawAxis(5))));
-      intake.set((logiController.getRawButton(5)?.5:(-logiController.getRawAxis(1))));
-    SmartDashboard.putNumber("DB/Slider 0", shotSpeed);
+      
+    //SmartDashboard.putNumber("DB/Slider 0", shotSpeed);
   }
 
-  //function wait
-  public void wait(int durationInMilli){
-    long startTime = System.currentTimeMillis();
-    long endTime = startTime + durationInMilli;
-    while (System.currentTimeMillis() >= endTime);
+  //function cam y to shooter speed
+  public double CamYToSpeed(boolean top){
+    double YPower;
+    int Y = (int) SmartDashboard.getNumber("DB/Slider 1", 0.0);
+    if (top) {
+      YPower = .8+.2*(Math.sqrt(2*Y/camHeight));
     }
-
-
-  //function back up
-  public void backup(double speed,int durationInMilli) {
-    
-    long startTime = System.currentTimeMillis();
-    long endTime = startTime + durationInMilli;
-    while (System.currentTimeMillis() >= endTime){
-      robotDrive.arcadeDrive(speed, 0);
+    else {
+      YPower = .5+.5*(Math.sqrt(2*Y/camHeight));
     }
-    robotDrive.arcadeDrive(0, 0);
-  }
-
-  public void backupCam(double speed,double y,int goalY) {
-    robotDrive.arcadeDrive(speed, 0);
-    while (goalY>y);
-    robotDrive.arcadeDrive(0,0);
-  }
-  //funtion go forward
-  public void forward(double speed,int durationInMilli) {
-    robotDrive.arcadeDrive(speed, 0);
-    wait(durationInMilli);
-    robotDrive.arcadeDrive(0, 0);
-  }
-  //function Shoot (high) w/camera
-  public void HighShotCam(int x,int y) {
-    int direction=(x>0)?1:-1;
-    // change x=0 to range
-    int center = Math.abs(x);
-    while (center>=PIXEL_OFFSET) {
-      robotDrive.arcadeDrive(0, TURNSPEED*direction);
-    }
-    robotDrive.arcadeDrive(0, 0);
-    double CamShootPower = ((y+100)/200);//change this code later for arc of ball and how that relates to 
-    shooter.set(CamShootPower);
-    intake.set(.5);
-  }  
-  //function Shoot (high) w/o camera
-  public void HighShot(double power,int timeInMilli) {
-    shooter.set(power);
-    intake.set(.5);
-    wait(timeInMilli);
-    shooter.set(0);
-    intake.set(0);
-  }  
-  //function shoot (low)
-  public void LowShot(double power) {
-    shooter.set(power);
-    intake.set(.5);
-  }  
-  //function pickup ball/intake
-  public void SuckySuckSuck(double speed,double duration) {
-    intake.set(speed);
-    //while duration
+    return YPower;
   }
 
 
